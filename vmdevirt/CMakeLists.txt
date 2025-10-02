@@ -132,6 +132,7 @@ set(vmdevirt_SOURCES
 	"include/devirt_utils.hpp"
 	"include/vm_lifters.hpp"
 	"include/vmp_rtn_t.hpp"
+	"include/xtils.hpp"
 	"src/devirt_t.cpp"
 	"src/devirt_utils.cpp"
 	"src/lifters/add.cpp"

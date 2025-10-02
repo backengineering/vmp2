@@ -1,7 +1,7 @@
 #include <ZydisExportConfig.h>
 
 #include <algorithm>
-#include <cli-parser.hpp>
+#include <argparse.h>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -27,7 +27,7 @@ auto open_binary_file(const std::string &file, std::vector<uint8_t> &data)
 }
 
 int __cdecl main(int argc, const char *argv[]) {
-  argparse::argument_parser_t parser("vmprofiler-cli",
+  argparse::ArgumentParser parser("vmprofiler-cli",
                                      "virtual machine information inspector");
   parser.add_argument()
       .names({"--bin", "--vmpbin"})

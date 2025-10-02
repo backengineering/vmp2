@@ -5,4 +5,4 @@ name = "vmprofiler-cli"
 type = "executable"
 
 sources = ["src/main.cpp", "src/icon.rc"]
-link-libraries = ["cli-parser", "vmprofiler", "linux-pe"]
+link-libraries = ["argparse", "vmprofiler", "linux-pe"]

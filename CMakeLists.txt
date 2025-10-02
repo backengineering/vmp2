@@ -26,6 +26,16 @@ endif()
 
 project(vmp2)
 
+# Subdirectory: vmprofiler
+set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
+if(CMAKE_FOLDER)
+	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmprofiler")
+else()
+	set(CMAKE_FOLDER vmprofiler)
+endif()
+add_subdirectory(vmprofiler)
+set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+
 # Subdirectory: vmassembler
 set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
 if(CMAKE_FOLDER)
@@ -34,16 +44,6 @@ else()
 	set(CMAKE_FOLDER vmassembler)
 endif()
 add_subdirectory(vmassembler)
-set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
-
-# Subdirectory: vmdevirt
-set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
-if(CMAKE_FOLDER)
-	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmdevirt")
-else()
-	set(CMAKE_FOLDER vmdevirt)
-endif()
-add_subdirectory(vmdevirt)
 set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
 
 # Subdirectory: vmemu
@@ -56,15 +56,48 @@ endif()
 add_subdirectory(vmemu)
 set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
 
-# Subdirectory: vmprofiler
-set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
-if(CMAKE_FOLDER)
-	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmprofiler")
-else()
-	set(CMAKE_FOLDER vmprofiler)
-endif()
-add_subdirectory(vmprofiler)
-set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+include(FetchContent)
+
+FetchContent_Declare(
+  argparse
+  GIT_REPOSITORY https://github.com/jamolnng/argparse.git
+  GIT_TAG        6a4495932dff0f5d31d0c32c6b4130b51daa2d42
+  CMAKE_ARGS
+    -DARGPARSE_BUILD_EXAMPLE=OFF
+    -DARGPARSE_TEST_ENABLE=OFF
+)
+
+FetchContent_Declare(
+  unicorn
+  GIT_REPOSITORY https://github.com/unicorn-engine/unicorn.git
+  GIT_TAG        2.1.4
+  CMAKE_ARGS
+    -DBUILD_SHARED_LIBS=OFF
+    -DUNICORN_BUILD_SHARED=OFF
+    -DUNICORN_BUILD_EXAMPLES=OFF
+    -DUNICORN_TEST_ENABLE=OFF
+)
+
+FetchContent_Declare(
+  linux-pe
+  GIT_REPOSITORY https://github.com/can1357/linux-pe.git
+  GIT_TAG        master
+)
+
+FetchContent_Declare(
+  zydis
+  GIT_REPOSITORY https://github.com/zyantific/zydis.git
+  GIT_TAG        bfee99f49274a0eec3ffea16ede3a5bda9cda88f
+)
+
+FetchContent_MakeAvailable(argparse unicorn linux-pe zydis)
+
+# Zydis options
+set(ZYDIS_BUILD_SHARED_LIB OFF CACHE BOOL "Disable building shared lib")
+set(ZYDIS_BUILD_EXAMPLES OFF CACHE BOOL "Disable building examples")
+set(ZYDIS_BUILD_TOOLS OFF CACHE BOOL "Disable building tools")
+set(ZYDIS_FUZZ_AFL_FAST OFF CACHE BOOL "Disable AFL fuzzing")
+set(ZYDIS_LIBFUZZER OFF CACHE BOOL "Disable libfuzzer")
 
 # Subdirectory: vmprofiler-cli
 set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
@@ -76,28 +109,17 @@ endif()
 add_subdirectory(vmprofiler-cli)
 set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
 
-include(FetchContent)
+option(BUILD_VMDEVIRT "Build the vmdevirt (cmkr) module" OFF)
+option(BUILD_VMPROFILER_QT "Build the vmprofiler-qt module" OFF)
 
-FetchContent_Declare(
-  argparse
-  GIT_REPOSITORY https://github.com/jamolnng/argparse.git
-  GIT_TAG        v0.1.0
-)
-
-FetchContent_Declare(
-  unicorn
-  GIT_REPOSITORY https://github.com/unicorn-engine/unicorn.git
-  GIT_TAG        2.1.4
-)
-
-FetchContent_MakeAvailable(argparse unicorn)
-
-# Subdirectory: vmprofiler-qt
-set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
-if(CMAKE_FOLDER)
-	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmprofiler-qt")
+if(BUILD_VMDEVIRT)
+    add_subdirectory(vmdevirt)
 else()
-	set(CMAKE_FOLDER vmprofiler-qt)
+    message(STATUS "Skipping vmdevirt (cmkr) because BUILD_VMDEVIRT is OFF")
 endif()
-add_subdirectory(vmprofiler-qt)
-set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+
+if(BUILD_VMPROFILER_QT)
+    add_subdirectory(vmprofiler-qt)
+else()
+    message(STATUS "Skipping vmprofiler-qt because BUILD_VMPROFILER_QT is OFF")
+endif()

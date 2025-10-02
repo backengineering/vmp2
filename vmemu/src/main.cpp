@@ -1,4 +1,4 @@
-#include <cli-parser.hpp>
+#include <argparse.h>
 #include <fstream>
 #include <iostream>
 #include <thread>
@@ -8,9 +8,10 @@
 
 #define NUM_THREADS 20
 
+using namespace argparse;
+
 int __cdecl main(int argc, const char* argv[]) {
-  argparse::argument_parser_t parser("VMEmu",
-                                     "VMProtect 2 VM Handler Emulator");
+  ArgumentParser parser("VMEmu", "VMProtect 2 VM Handler Emulator");
   parser.add_argument()
       .name("--vmentry")
       .description("relative virtual address to a vm entry...");

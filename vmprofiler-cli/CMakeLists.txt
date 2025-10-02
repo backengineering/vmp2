@@ -39,7 +39,7 @@ target_sources(vmprofiler-cli PRIVATE ${vmprofiler-cli_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${vmprofiler-cli_SOURCES})
 
 target_link_libraries(vmprofiler-cli PRIVATE
-	cli-parser
+	argparse
 	vmprofiler
 	linux-pe
 )

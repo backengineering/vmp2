@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <cli-parser.hpp>
+#include <argparse.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -22,8 +22,7 @@ void yyerror(char* msg) {
 }
 
 int __cdecl main(int argc, const char* argv[]) {
-  argparse::argument_parser_t argp("vmassembler",
-                                   "virtual instruction assembler");
+  argparse::ArgumentParser argp("vmassembler", "virtual instruction assembler");
 
   argp.add_argument()
       .names({"--input", "--in"})

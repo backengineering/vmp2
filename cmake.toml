@@ -12,16 +12,43 @@ include(FetchContent)
 FetchContent_Declare(
   argparse
   GIT_REPOSITORY https://github.com/jamolnng/argparse.git
-  GIT_TAG        v0.1.0
+  GIT_TAG        6a4495932dff0f5d31d0c32c6b4130b51daa2d42
+  CMAKE_ARGS
+    -DARGPARSE_BUILD_EXAMPLE=OFF
+    -DARGPARSE_TEST_ENABLE=OFF
 )
 
 FetchContent_Declare(
   unicorn
   GIT_REPOSITORY https://github.com/unicorn-engine/unicorn.git
   GIT_TAG        2.1.4
+  CMAKE_ARGS
+    -DBUILD_SHARED_LIBS=OFF
+    -DUNICORN_BUILD_SHARED=OFF
+    -DUNICORN_BUILD_EXAMPLES=OFF
+    -DUNICORN_TEST_ENABLE=OFF
 )
 
-FetchContent_MakeAvailable(argparse unicorn)
+FetchContent_Declare(
+  linux-pe
+  GIT_REPOSITORY https://github.com/can1357/linux-pe.git
+  GIT_TAG        master
+)
+
+FetchContent_Declare(
+  zydis
+  GIT_REPOSITORY https://github.com/zyantific/zydis.git
+  GIT_TAG        bfee99f49274a0eec3ffea16ede3a5bda9cda88f
+)
+
+FetchContent_MakeAvailable(argparse unicorn linux-pe zydis)
+
+# Zydis options
+set(ZYDIS_BUILD_SHARED_LIB OFF CACHE BOOL "Disable building shared lib")
+set(ZYDIS_BUILD_EXAMPLES OFF CACHE BOOL "Disable building examples")
+set(ZYDIS_BUILD_TOOLS OFF CACHE BOOL "Disable building tools")
+set(ZYDIS_FUZZ_AFL_FAST OFF CACHE BOOL "Disable AFL fuzzing")
+set(ZYDIS_LIBFUZZER OFF CACHE BOOL "Disable libfuzzer")
 """
 
 # Add options to disable building the QT UI and LLVM devirt stuff
