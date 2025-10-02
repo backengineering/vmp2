@@ -4,12 +4,9 @@
 
 * CMake ≥ 3.11
 * C++ compiler
-* LLVM if building `vmdevirt`
-* Qt if building `vmprofiler-qt`
+* Visual Studios for `vmhook`
 
-### Build
-
-**Default:**
+**Configuration for vmassembler, vmemu, vmprofiler, and vmprofiler-cli:**
 
 ```bash
 cmake -B build
