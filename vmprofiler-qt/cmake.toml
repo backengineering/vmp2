@@ -1,0 +1,48 @@
+[cmake]
+version = "3.15"
+cmkr-include = "cmake/cmkr.cmake"
+
+[project]
+name = "VMProfiler Qt"
+version = "1.8"
+description = "VMProtect 2 IL Inspector"
+include-after = ["cmake/Qt5Helpers.cmake"]
+
+[find-package]
+Qt5 = { components = ["Widgets"] }
+
+[target.vmprofiler-qt]
+type = "executable"
+compile-features = ["cxx_std_20"]
+
+sources = [
+	"src/qvminspector.ui",
+	"src/qvminspector.qrc",
+	"src/**.cpp",
+	"src/**.h",
+	"src/icon.rc",
+	"src/darkstyle/mainwindow.ui",
+	"src/darkstyle/framelesswindow.qrc",
+	"src/darkstyle/framelesswindow/framelesswindow.ui",
+	"dependencies/ia32-doc/out/ia32.hpp",
+]
+
+include-directories = [
+	"include",
+	"src/darkstyle/framelesswindow/",
+	"dependencies/ia32-doc/out/",
+]
+
+compile-definitions = ["NOMINMAX"]
+link-libraries = ["Qt5::Widgets", "vmprofiler"]
+
+cmake-after = """
+# Enable Qt moc/rrc/uic support
+target_qt(${CMKR_TARGET})
+# Copy Qt DLLs next to the application
+target_windeployqt(${CMKR_TARGET})
+"""
+
+[[install]]
+targets = ["vmprofiler-qt"]
+destination = "bin"

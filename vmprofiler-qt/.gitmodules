@@ -1,0 +1,6 @@
+[submodule "dependencies/vmprofiler"]
+	path = dependencies/vmprofiler
+	url = https://githacks.org/vmp2/vmprofiler.git
+[submodule "dependencies/ia32-doc"]
+	path = dependencies/ia32-doc
+	url = https://github.com/wbenny/ia32-doc.git

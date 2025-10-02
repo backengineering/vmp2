@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Grammer Files">
+      <UniqueIdentifier>{588916a0-07de-47a7-8441-90c069dce494}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vmprofiler">
+      <UniqueIdentifier>{f85b7642-b2f1-4e4a-b0f7-12bf32019ea5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vmprofiler\Zydis">
+      <UniqueIdentifier>{a6446cc2-eff0-4347-89a4-e49bfb61fc97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vmprofiler\Zydis\Generated">
+      <UniqueIdentifier>{29199b7a-1038-4779-8865-1e07e47242f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vmprofiler\Zydis\Internal">
+      <UniqueIdentifier>{56b7bb3b-daad-492d-a59d-7531b8aecfde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vmprofiler\Zycore">
+      <UniqueIdentifier>{68c2cdf5-2680-4dba-9f55-1a2ca991b49f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vmprofiler\Zycore\API">
+      <UniqueIdentifier>{64515351-6807-48cf-a795-ee2538e1b999}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.tab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lexer.flex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Bison Include="parser.y">
+      <Filter>Grammer Files</Filter>
+    </Bison>
+  </ItemGroup>
+  <ItemGroup>
+    <Flex Include="lexer.l">
+      <Filter>Grammer Files</Filter>
+    </Flex>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="parser.tab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\API\Memory.h">
+      <Filter>Header Files\vmprofiler\Zycore\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\API\Process.h">
+      <Filter>Header Files\vmprofiler\Zycore\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\API\Synchronization.h">
+      <Filter>Header Files\vmprofiler\Zycore\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\API\Terminal.h">
+      <Filter>Header Files\vmprofiler\Zycore\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\API\Thread.h">
+      <Filter>Header Files\vmprofiler\Zycore\API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Allocator.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\ArgParse.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Bitset.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Comparison.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Defines.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Format.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\LibC.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\List.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Object.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Status.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\String.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Types.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Vector.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zycore\Zycore.h">
+      <Filter>Header Files\vmprofiler\Zycore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Generated\EnumInstructionCategory.h">
+      <Filter>Header Files\vmprofiler\Zydis\Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Generated\EnumISAExt.h">
+      <Filter>Header Files\vmprofiler\Zydis\Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Generated\EnumISASet.h">
+      <Filter>Header Files\vmprofiler\Zydis\Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Generated\EnumMnemonic.h">
+      <Filter>Header Files\vmprofiler\Zydis\Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Generated\EnumRegister.h">
+      <Filter>Header Files\vmprofiler\Zydis\Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Internal\DecoderData.h">
+      <Filter>Header Files\vmprofiler\Zydis\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Internal\FormatterATT.h">
+      <Filter>Header Files\vmprofiler\Zydis\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Internal\FormatterBase.h">
+      <Filter>Header Files\vmprofiler\Zydis\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Internal\FormatterIntel.h">
+      <Filter>Header Files\vmprofiler\Zydis\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Internal\SharedData.h">
+      <Filter>Header Files\vmprofiler\Zydis\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Internal\String.h">
+      <Filter>Header Files\vmprofiler\Zydis\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Decoder.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\DecoderTypes.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Formatter.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\FormatterBuffer.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\MetaInfo.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Mnemonic.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Register.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\SharedTypes.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\ShortString.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Status.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Utils.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\Zydis\Zydis.h">
+      <Filter>Header Files\vmprofiler\Zydis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\transform.hpp">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\vm.h">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\vmctx.h">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\vmp2.hpp">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\vmprofiler.hpp">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\vmutils.h">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\ZycoreExportConfig.h">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\vmprofiler\include\ZydisExportConfig.h">
+      <Filter>Header Files\vmprofiler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\xtils\xtils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dependencies\cli-parser\cli-parser.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gen_code.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="icon.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.clang-format">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

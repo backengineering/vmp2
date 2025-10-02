@@ -1,0 +1,10 @@
+[project]
+name = "vmp2"
+
+[subdir.vmassembler]
+[subdir.vmdevirt]
+[subdir.vmemu]
+[subdir.vmhook]
+[subdir.vmprofiler]
+[subdir.vmprofiler-cli]
+[subdir.vmprofiler-qt]

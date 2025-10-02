@@ -1,0 +1,6 @@
+[submodule "dependencies/vmhook"]
+	path = dependencies/vmhook
+	url = https://githacks.org/vmp2/vmhook.git
+[submodule "dependencies/cli-parser"]
+	path = dependencies/cli-parser
+	url = https://githacks.org/_xeroxz/cli-parser.git

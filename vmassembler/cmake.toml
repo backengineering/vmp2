@@ -1,0 +1,10 @@
+[project]
+name = "vmassembler"
+
+[target.vmassembler]
+type = "executable"
+compile-features = ["cxx_std_20"]
+sources = ["src/**.cpp", "src/**.l", "src/**.y", "include/**.hpp", "src/**.h"]
+include-directories = ["include", "src"]
+link-libraries = ["vmprofiler", "xtils", "cli-parser", "linux-pe"]
+compile-definitions = ["NOMINMAX", "_UNICODE"]
