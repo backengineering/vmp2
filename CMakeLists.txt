@@ -25,3 +25,79 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 endif()
 
 project(vmp2)
+
+# Subdirectory: vmassembler
+set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
+if(CMAKE_FOLDER)
+	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmassembler")
+else()
+	set(CMAKE_FOLDER vmassembler)
+endif()
+add_subdirectory(vmassembler)
+set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+
+# Subdirectory: vmdevirt
+set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
+if(CMAKE_FOLDER)
+	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmdevirt")
+else()
+	set(CMAKE_FOLDER vmdevirt)
+endif()
+add_subdirectory(vmdevirt)
+set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+
+# Subdirectory: vmemu
+set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
+if(CMAKE_FOLDER)
+	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmemu")
+else()
+	set(CMAKE_FOLDER vmemu)
+endif()
+add_subdirectory(vmemu)
+set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+
+# Subdirectory: vmprofiler
+set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
+if(CMAKE_FOLDER)
+	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmprofiler")
+else()
+	set(CMAKE_FOLDER vmprofiler)
+endif()
+add_subdirectory(vmprofiler)
+set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+
+# Subdirectory: vmprofiler-cli
+set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
+if(CMAKE_FOLDER)
+	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmprofiler-cli")
+else()
+	set(CMAKE_FOLDER vmprofiler-cli)
+endif()
+add_subdirectory(vmprofiler-cli)
+set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
+
+include(FetchContent)
+
+FetchContent_Declare(
+  argparse
+  GIT_REPOSITORY https://github.com/jamolnng/argparse.git
+  GIT_TAG        v0.1.0
+)
+
+FetchContent_Declare(
+  unicorn
+  GIT_REPOSITORY https://github.com/unicorn-engine/unicorn.git
+  GIT_TAG        2.1.4
+)
+
+FetchContent_MakeAvailable(argparse unicorn)
+
+# Subdirectory: vmprofiler-qt
+set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
+if(CMAKE_FOLDER)
+	set(CMAKE_FOLDER "${CMAKE_FOLDER}/vmprofiler-qt")
+else()
+	set(CMAKE_FOLDER vmprofiler-qt)
+endif()
+add_subdirectory(vmprofiler-qt)
+set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})

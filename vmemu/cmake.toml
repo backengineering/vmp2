@@ -6,5 +6,5 @@ type = "executable"
 
 sources = ["src/**.cpp", "include/**.hpp"]
 include-directories = ["include"]
-link-libraries = ["vmprofiler", "unicorn", "cli-parser"]
+link-libraries = ["vmprofiler", "unicorn", "argparse"]
 compile-definitions = ["NOMINMAX"]

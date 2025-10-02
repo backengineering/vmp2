@@ -3,12 +3,15 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-# Regenerate CMakeLists.txt automatically in the root project
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+	message(FATAL_ERROR "In-tree builds are not supported. Run CMake from a separate directory: cmake -B build")
+endif()
+
 set(CMKR_ROOT_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	set(CMKR_ROOT_PROJECT ON)
 
-	# Bootstrap cmkr
+	# Bootstrap cmkr and automatically regenerate CMakeLists.txt
 	include(cmkr.cmake OPTIONAL RESULT_VARIABLE CMKR_INCLUDE_RESULT)
 	if(CMKR_INCLUDE_RESULT)
 		cmkr()
@@ -16,59 +19,32 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
 	# Enable folder support
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
 
-# Create a configure-time dependency on cmake.toml to improve IDE support
-if(CMKR_ROOT_PROJECT)
-	configure_file(cmake.toml cmake.toml COPYONLY)
+	# Create a configure-time dependency on cmake.toml to improve IDE support
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cmake.toml)
 endif()
 
 project(vmassembler)
 
-# dependencies
-set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
-if(CMAKE_FOLDER)
-	set(CMAKE_FOLDER "${CMAKE_FOLDER}/dependencies")
-else()
-	set(CMAKE_FOLDER dependencies)
-endif()
-add_subdirectory(dependencies)
-set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
-
-# Target vmassembler
-set(CMKR_TARGET vmassembler)
-set(vmassembler_SOURCES "")
-
-list(APPEND vmassembler_SOURCES
-	"src/compiler.cpp"
-	"src/lexer.flex.cpp"
-	"src/main.cpp"
-	"src/parser.cpp"
-	"src/parser.tab.cpp"
-	"src/lexer.l"
-	"src/parser.y"
+# Target: vmassembler
+set(vmassembler_SOURCES
+	cmake.toml
 	"include/compiler.hpp"
 	"include/gen_code.hpp"
 	"include/parser.hpp"
+	"src/compiler.cpp"
+	"src/lexer.flex.cpp"
+	"src/lexer.l"
+	"src/main.cpp"
+	"src/parser.cpp"
+	"src/parser.tab.cpp"
 	"src/parser.tab.h"
+	"src/parser.y"
 )
 
-list(APPEND vmassembler_SOURCES
-	cmake.toml
-)
-
-set(CMKR_SOURCES ${vmassembler_SOURCES})
 add_executable(vmassembler)
 
-if(vmassembler_SOURCES)
-	target_sources(vmassembler PRIVATE ${vmassembler_SOURCES})
-endif()
-
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
-if(NOT CMKR_VS_STARTUP_PROJECT)
-	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT vmassembler)
-endif()
-
+target_sources(vmassembler PRIVATE ${vmassembler_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${vmassembler_SOURCES})
 
 target_compile_definitions(vmassembler PRIVATE
@@ -92,6 +68,7 @@ target_link_libraries(vmassembler PRIVATE
 	linux-pe
 )
 
-unset(CMKR_TARGET)
-unset(CMKR_SOURCES)
-
+get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
+if(NOT CMKR_VS_STARTUP_PROJECT)
+	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT vmassembler)
+endif()

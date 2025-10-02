@@ -3,12 +3,15 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-# Regenerate CMakeLists.txt automatically in the root project
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+	message(FATAL_ERROR "In-tree builds are not supported. Run CMake from a separate directory: cmake -B build")
+endif()
+
 set(CMKR_ROOT_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	set(CMKR_ROOT_PROJECT ON)
 
-	# Bootstrap cmkr
+	# Bootstrap cmkr and automatically regenerate CMakeLists.txt
 	include(cmkr.cmake OPTIONAL RESULT_VARIABLE CMKR_INCLUDE_RESULT)
 	if(CMKR_INCLUDE_RESULT)
 		cmkr()
@@ -16,30 +19,119 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
 	# Enable folder support
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
 
-# Create a configure-time dependency on cmake.toml to improve IDE support
-if(CMKR_ROOT_PROJECT)
-	configure_file(cmake.toml cmake.toml COPYONLY)
+	# Create a configure-time dependency on cmake.toml to improve IDE support
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cmake.toml)
 endif()
 
 project(vmdevirt)
 
-# dependencies
-set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
-if(CMAKE_FOLDER)
-	set(CMAKE_FOLDER "${CMAKE_FOLDER}/dependencies")
-else()
-	set(CMAKE_FOLDER dependencies)
-endif()
-add_subdirectory(dependencies)
-set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
-
-# Target vmdevirt
+# Target: vmdevirt
 set(CMKR_TARGET vmdevirt)
-set(vmdevirt_SOURCES "")
+include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
+option(LLVM_BUILD_TYPE "Build type for LLVM (Release or Debug)" Release)
 
-list(APPEND vmdevirt_SOURCES
+# Define LLVM install directory
+set(LLVM_INSTALL_DIR ${CMAKE_BINARY_DIR}/llvm-install)
+
+# Check if LLVM is already installed
+if(EXISTS ${LLVM_INSTALL_DIR})
+    message(STATUS "LLVM is already installed in ${LLVM_INSTALL_DIR}, skipping build.")
+else()
+    message(STATUS "LLVM not found, proceeding with download and build...")
+
+    # Fetch LLVM project
+    FetchContent_Declare(
+        llvm-project
+        GIT_REPOSITORY https://github.com/llvm/llvm-project.git
+        GIT_TAG llvmorg-20.1.0
+        GIT_PROGRESS TRUE
+    )
+    FetchContent_MakeAvailable(llvm-project)
+
+    # Set up LLVM build directory
+    set(LLVM_BUILD_DIR ${CMAKE_BINARY_DIR}/llvm-build)
+    message(STATUS "LLVM Build Directory: ${LLVM_BUILD_DIR}")
+    message(STATUS "LLVM Install Directory: ${LLVM_INSTALL_DIR}")
+
+    # Run CMake configuration for LLVM
+    message(STATUS "Running CMake configuration for LLVM...")
+    execute_process(
+        COMMAND cmake -S ${llvm-project_SOURCE_DIR}/llvm -B ${LLVM_BUILD_DIR} 
+            -DCMAKE_CONFIGURATION_TYPES=${LLVM_BUILD_TYPE}
+            -DCMAKE_BUILD_TYPE=${LLVM_BUILD_TYPE}
+            -DCMAKE_INSTALL_PREFIX=${LLVM_INSTALL_DIR} 
+            -DLLVM_TARGETS_TO_BUILD=X86
+            -DLLVM_ENABLE_PROJECTS=clang
+            -DLLVM_BUILD_LLVM_C_DYLIB=OFF
+            -DLLVM_BUILD_RUNTIME=OFF
+            -DLLVM_BUILD_RUNTIMES=OFF
+            -DLLVM_BUILD_TOOLS=OFF
+            -DLLVM_BUILD_UTILS=OFF
+            -DLLVM_ENABLE_BACKTRACES=OFF
+            -DLLVM_ENABLE_BINDINGS=OFF
+            -DLLVM_ENABLE_CRASH_OVERRIDES=OFF
+            -DLLVM_ENABLE_OCAMLDOC=OFF
+            -DLLVM_ENABLE_PDB=ON
+            -DLLVM_INCLUDE_BENCHMARKS=OFF
+            -DLLVM_INCLUDE_DOCS=OFF
+            -DLLVM_INCLUDE_EXAMPLES=OFF
+            -DLLVM_INCLUDE_GO_TESTS=OFF
+            -DLLVM_INCLUDE_RUNTIMES=OFF
+            -DLLVM_INCLUDE_TESTS=OFF
+            -DLLVM_INCLUDE_TOOLS=OFF
+            -DLLVM_INCLUDE_UTILS=OFF
+            RESULT_VARIABLE config_result
+            OUTPUT_VARIABLE config_output
+            ERROR_VARIABLE config_error
+    )
+
+    if(config_result)
+        message(FATAL_ERROR "LLVM configuration failed: ${config_error}")
+    else()
+        message(STATUS "LLVM configured successfully.")
+    endif()
+
+    # Build LLVM
+    message(STATUS "Starting LLVM build process...")
+    execute_process(
+        COMMAND cmake --build ${LLVM_BUILD_DIR} --config ${LLVM_BUILD_TYPE} -j24
+        RESULT_VARIABLE build_result
+        OUTPUT_VARIABLE build_output
+        ERROR_VARIABLE build_error
+    )
+
+    if(build_result)
+        message(FATAL_ERROR "LLVM build failed: ${build_error}")
+    else()
+        message(STATUS "LLVM built successfully.")
+    endif()
+
+    # Install LLVM
+    message(STATUS "Installing LLVM to ${LLVM_INSTALL_DIR}...")
+    execute_process(
+        COMMAND cmake --install ${LLVM_BUILD_DIR}
+        RESULT_VARIABLE install_result
+        OUTPUT_VARIABLE install_output
+        ERROR_VARIABLE install_error
+    )
+
+    if(install_result)
+        message(FATAL_ERROR "LLVM install failed: ${install_error}")
+    else()
+        message(STATUS "LLVM installed successfully.")
+    endif()
+
+    message(STATUS "LLVM setup complete.")
+endif()
+
+set(vmdevirt_SOURCES
+	cmake.toml
+	"include/devirt_t.hpp"
+	"include/devirt_utils.hpp"
+	"include/vm_lifters.hpp"
+	"include/vmp_rtn_t.hpp"
 	"src/devirt_t.cpp"
 	"src/devirt_utils.cpp"
 	"src/lifters/add.cpp"
@@ -70,40 +162,23 @@ list(APPEND vmdevirt_SOURCES
 	"src/lifters/writecr3.cpp"
 	"src/main.cpp"
 	"src/vmp_rtn_t.cpp"
-	"include/devirt_t.hpp"
-	"include/devirt_utils.hpp"
-	"include/vm_lifters.hpp"
-	"include/vmp_rtn_t.hpp"
 )
 
-list(APPEND vmdevirt_SOURCES
-	cmake.toml
-)
-
-set(CMKR_SOURCES ${vmdevirt_SOURCES})
 add_executable(vmdevirt)
 
-if(vmdevirt_SOURCES)
-	target_sources(vmdevirt PRIVATE ${vmdevirt_SOURCES})
-endif()
-
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
-if(NOT CMKR_VS_STARTUP_PROJECT)
-	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT vmdevirt)
-endif()
-
+target_sources(vmdevirt PRIVATE ${vmdevirt_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${vmdevirt_SOURCES})
 
 target_compile_definitions(vmdevirt PRIVATE
 	NOMINMAX
 )
 
+target_compile_features(vmdevirt PRIVATE
+	cxx_std_17
+)
+
 target_include_directories(vmdevirt PRIVATE
 	include
-	"dependencies/llvm/llvm/include/"
-	"dependencies/llvm/llvm/lib/Target/X86/"
-	"build/dependencies/llvm/llvm/lib/Target/X86"
-	"build/dependencies/llvm/llvm/include/"
 )
 
 target_link_libraries(vmdevirt PRIVATE
@@ -122,6 +197,10 @@ target_link_libraries(vmdevirt PRIVATE
 	LLVMPasses
 )
 
-unset(CMKR_TARGET)
-unset(CMKR_SOURCES)
+get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
+if(NOT CMKR_VS_STARTUP_PROJECT)
+	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT vmdevirt)
+endif()
 
+target_link_directories(pdbgen3 PRIVATE ${LLVM_INSTALL_DIR}/lib)
+target_include_directories(pdbgen3 PRIVATE ${LLVM_INSTALL_DIR}/include)

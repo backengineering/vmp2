@@ -3,12 +3,15 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-# Regenerate CMakeLists.txt automatically in the root project
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+	message(FATAL_ERROR "In-tree builds are not supported. Run CMake from a separate directory: cmake -B build")
+endif()
+
 set(CMKR_ROOT_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	set(CMKR_ROOT_PROJECT ON)
 
-	# Bootstrap cmkr
+	# Bootstrap cmkr and automatically regenerate CMakeLists.txt
 	include(cmkr.cmake OPTIONAL RESULT_VARIABLE CMKR_INCLUDE_RESULT)
 	if(CMKR_INCLUDE_RESULT)
 		cmkr()
@@ -16,30 +19,27 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
 	# Enable folder support
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
 
-# Create a configure-time dependency on cmake.toml to improve IDE support
-if(CMKR_ROOT_PROJECT)
-	configure_file(cmake.toml cmake.toml COPYONLY)
+	# Create a configure-time dependency on cmake.toml to improve IDE support
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cmake.toml)
 endif()
 
 project(vmprofiler)
 
-# dependencies
-set(CMKR_CMAKE_FOLDER ${CMAKE_FOLDER})
-if(CMAKE_FOLDER)
-	set(CMAKE_FOLDER "${CMAKE_FOLDER}/dependencies")
-else()
-	set(CMAKE_FOLDER dependencies)
-endif()
-add_subdirectory(dependencies)
-set(CMAKE_FOLDER ${CMKR_CMAKE_FOLDER})
-
-# Target vmprofiler
-set(CMKR_TARGET vmprofiler)
-set(vmprofiler_SOURCES "")
-
-list(APPEND vmprofiler_SOURCES
+# Target: vmprofiler
+set(vmprofiler_SOURCES
+	cmake.toml
+	"include/calc_jmp.hpp"
+	"include/scn.hpp"
+	"include/transform.hpp"
+	"include/vmctx.hpp"
+	"include/vmhandlers.hpp"
+	"include/vminstrs.hpp"
+	"include/vmlocate.hpp"
+	"include/vmp2.hpp"
+	"include/vmprofiler.hpp"
+	"include/vmprofiles.hpp"
+	"include/vmutils.hpp"
 	"src/calc_jmp.cpp"
 	"src/scn.cpp"
 	"src/vmctx.cpp"
@@ -72,30 +72,11 @@ list(APPEND vmprofiler_SOURCES
 	"src/vmprofiles/write.cpp"
 	"src/vmprofiles/writecr3.cpp"
 	"src/vmutils.cpp"
-	"include/calc_jmp.hpp"
-	"include/scn.hpp"
-	"include/transform.hpp"
-	"include/vmctx.hpp"
-	"include/vmhandlers.hpp"
-	"include/vminstrs.hpp"
-	"include/vmlocate.hpp"
-	"include/vmp2.hpp"
-	"include/vmprofiler.hpp"
-	"include/vmprofiles.hpp"
-	"include/vmutils.hpp"
 )
 
-list(APPEND vmprofiler_SOURCES
-	cmake.toml
-)
-
-set(CMKR_SOURCES ${vmprofiler_SOURCES})
 add_library(vmprofiler STATIC)
 
-if(vmprofiler_SOURCES)
-	target_sources(vmprofiler PRIVATE ${vmprofiler_SOURCES})
-endif()
-
+target_sources(vmprofiler PRIVATE ${vmprofiler_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${vmprofiler_SOURCES})
 
 target_compile_definitions(vmprofiler PUBLIC
@@ -112,10 +93,5 @@ target_include_directories(vmprofiler PUBLIC
 
 target_link_libraries(vmprofiler PUBLIC
 	Zydis
-	xtils
 	linux-pe
 )
-
-unset(CMKR_TARGET)
-unset(CMKR_SOURCES)
-

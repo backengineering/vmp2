@@ -1,10 +1,43 @@
 [project]
 name = "vmp2"
 
-[subdir.vmassembler]
-[subdir.vmdevirt]
-[subdir.vmemu]
-[subdir.vmhook]
 [subdir.vmprofiler]
+[subdir.vmassembler]
+[subdir.vmemu]
 [subdir.vmprofiler-cli]
-[subdir.vmprofiler-qt]
+
+cmake-before = """
+include(FetchContent)
+
+FetchContent_Declare(
+  argparse
+  GIT_REPOSITORY https://github.com/jamolnng/argparse.git
+  GIT_TAG        v0.1.0
+)
+
+FetchContent_Declare(
+  unicorn
+  GIT_REPOSITORY https://github.com/unicorn-engine/unicorn.git
+  GIT_TAG        2.1.4
+)
+
+FetchContent_MakeAvailable(argparse unicorn)
+"""
+
+# Add options to disable building the QT UI and LLVM devirt stuff
+cmake-after = """
+option(BUILD_VMDEVIRT "Build the vmdevirt (cmkr) module" OFF)
+option(BUILD_VMPROFILER_QT "Build the vmprofiler-qt module" OFF)
+
+if(BUILD_VMDEVIRT)
+    add_subdirectory(vmdevirt)
+else()
+    message(STATUS "Skipping vmdevirt (cmkr) because BUILD_VMDEVIRT is OFF")
+endif()
+
+if(BUILD_VMPROFILER_QT)
+    add_subdirectory(vmprofiler-qt)
+else()
+    message(STATUS "Skipping vmprofiler-qt because BUILD_VMPROFILER_QT is OFF")
+endif()
+"""
