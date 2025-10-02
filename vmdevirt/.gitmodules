@@ -1,0 +1,9 @@
+[submodule "dependencies/llvm"]
+	path = dependencies/llvm
+	url = https://github.com/llvm/llvm-project.git
+[submodule "dependencies/vmprofiler"]
+	path = dependencies/vmprofiler
+	url = https://githacks.org/vmp2/vmprofiler.git
+[submodule "dependencies/cli-parser"]
+	path = dependencies/cli-parser
+	url = https://githacks.org/_xeroxz/cli-parser.git

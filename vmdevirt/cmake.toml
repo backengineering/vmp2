@@ -1,0 +1,36 @@
+[project]
+name = "vmdevirt"
+
+[subdir.dependencies]
+[target.vmdevirt]
+type = "executable"
+
+sources = [
+    "src/**.cpp",
+    "include/**.hpp",
+]
+include-directories = [
+    "include",
+    "dependencies/llvm/llvm/include/",
+    "dependencies/llvm/llvm/lib/Target/X86/",
+    "build/dependencies/llvm/llvm/lib/Target/X86",
+    "build/dependencies/llvm/llvm/include/",
+]
+link-libraries = [
+    "cli-parser",
+    "vmprofiler",
+    "LLVMCore",
+    "LLVMCodeGen",
+    "LLVMSupport",
+    "LLVMLinker",
+    "LLVMX86CodeGen",
+    "LLVMX86AsmParser",
+    "LLVMX86Desc",
+    "LLVMX86Disassembler",
+    "LLVMX86Info",
+    "LLVMAsmParser",
+    "LLVMPasses"
+]
+compile-definitions = [
+    "NOMINMAX"
+]

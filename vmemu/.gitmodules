@@ -1,0 +1,9 @@
+[submodule "dependencies/unicorn"]
+	path = dependencies/unicorn
+	url = https://github.com/unicorn-engine/unicorn.git
+[submodule "dependencies/cli-parser"]
+	path = dependencies/cli-parser
+	url = https://githacks.org/_xeroxz/cli-parser.git
+[submodule "dependencies/vmprofiler"]
+	path = dependencies/vmprofiler
+	url = https://githacks.org/vmp2/vmprofiler.git

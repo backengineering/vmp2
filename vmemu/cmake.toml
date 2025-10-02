@@ -1,0 +1,10 @@
+[project]
+name = "vmemu"
+
+[target.vmemu]
+type = "executable"
+
+sources = ["src/**.cpp", "include/**.hpp"]
+include-directories = ["include"]
+link-libraries = ["vmprofiler", "unicorn", "cli-parser"]
+compile-definitions = ["NOMINMAX"]
