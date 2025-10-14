@@ -63,9 +63,18 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/jamolnng/argparse.git
   GIT_TAG        6a4495932dff0f5d31d0c32c6b4130b51daa2d42
   CMAKE_ARGS
-    -DARGPARSE_BUILD_EXAMPLE=OFF
-    -DARGPARSE_TEST_ENABLE=OFF
+    -DARGPARSE_BUILD_EXAMPLE:BOOL=OFF
+    -DARGPARSE_TEST_ENABLE:BOOL=OFF
 )
+
+# Force remove example/test if they got created anyway
+# please fuck off argparse thank you!
+if(TARGET example)
+    remove_executable(example)
+endif()
+if(TARGET tests)
+    remove_executable(tests)
+endif()
 
 FetchContent_Declare(
   unicorn
@@ -113,6 +122,7 @@ option(BUILD_VMDEVIRT "Build the vmdevirt (cmkr) module" OFF)
 option(BUILD_VMPROFILER_QT "Build the vmprofiler-qt module" OFF)
 
 if(BUILD_VMDEVIRT)
+  message(STATUS "Including vmdevirt (cmkr) because BUILD_VMDEVIRT is ON")
     add_subdirectory(vmdevirt)
 else()
     message(STATUS "Skipping vmdevirt (cmkr) because BUILD_VMDEVIRT is OFF")

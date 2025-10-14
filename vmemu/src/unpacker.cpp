@@ -74,35 +74,6 @@ bool unpack_t::init(void) {
                bin.data() + sec_header.ptr_raw_data, sec_header.size_raw_data);
       });
 
-  auto basereloc_dir =
-      win_img->get_directory(win::directory_id::directory_entry_basereloc);
-
-  auto reloc_dir = reinterpret_cast<win::reloc_directory_t*>(
-      basereloc_dir->rva + map_bin.data());
-
-  win::reloc_block_t* reloc_block = &reloc_dir->first_block;
-
-  // apply relocations to all sections...
-  while (reloc_block->base_rva && reloc_block->size_block) {
-    std::for_each(
-        reloc_block->begin(), reloc_block->end(),
-        [&](win::reloc_entry_t& entry) {
-          switch (entry.type) {
-            case win::reloc_type_id::rel_based_dir64: {
-              auto reloc_at = reinterpret_cast<std::uintptr_t*>(
-                  entry.offset + reloc_block->base_rva + map_bin.data());
-
-              *reloc_at = img_base + ((*reloc_at) - img_base);
-              break;
-            }
-            default:
-              break;
-          }
-        });
-
-    reloc_block = reloc_block->next();
-  }
-
   // install iat hooks...
   for (auto import_dir = reinterpret_cast<win::import_directory_t*>(
            win_img->get_directory(win::directory_id::directory_entry_import)
@@ -163,7 +134,7 @@ bool unpack_t::unpack(std::vector<std::uint8_t>& output) {
   uc_err err;
   auto nt_headers = win_img->get_nt_headers();
   std::uintptr_t rip = nt_headers->optional_header.entry_point + img_base,
-                 rsp = (STACK_BASE + STACK_SIZE) - 0x28;
+                 rsp = (STACK_BASE + STACK_SIZE) - PAGE_4KB;
 
   if ((err = uc_reg_write(uc_ctx, UC_X86_REG_RSP, &rsp))) {
     std::printf("> uc_reg_write error, reason = %d\n", err);
@@ -350,6 +321,7 @@ void unpack_t::local_alloc_hook(uc_engine* uc_ctx, unpack_t* obj) {
 void unpack_t::is_debugger_present_hook(uc_engine* uc, unpack_t* obj) {
   std::uintptr_t rax = 0ull;
   uc_reg_write(uc, UC_X86_REG_RAX, &rax);
+  printf("> IsDebuggerPresent Called!\n");
 }
 
 void unpack_t::local_free_hook(uc_engine* uc_ctx, unpack_t* obj) {
@@ -625,10 +597,13 @@ void unpack_t::invalid_mem(uc_engine* uc,
     }
     case UC_MEM_WRITE_UNMAPPED: {
       uc_mem_map(uc, address & ~0xFFFull, PAGE_4KB, UC_PROT_ALL);
+      std::uintptr_t rip = 0;
+      uc_reg_read(uc, UC_X86_REG_RIP, &rip);
+
       std::printf(
           ">>> writing invalid memory at address = %p, size = 0x%x, val = "
-          "0x%x\n",
-          address, size, value);
+          "0x%x rip = %p\n",
+          address, size, value, rip);
       break;
     }
     case UC_MEM_FETCH_UNMAPPED: {

@@ -3,15 +3,12 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-	message(FATAL_ERROR "In-tree builds are not supported. Run CMake from a separate directory: cmake -B build")
-endif()
-
+# Regenerate CMakeLists.txt automatically in the root project
 set(CMKR_ROOT_PROJECT OFF)
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	set(CMKR_ROOT_PROJECT ON)
 
-	# Bootstrap cmkr and automatically regenerate CMakeLists.txt
+	# Bootstrap cmkr
 	include(cmkr.cmake OPTIONAL RESULT_VARIABLE CMKR_INCLUDE_RESULT)
 	if(CMKR_INCLUDE_RESULT)
 		cmkr()
@@ -19,14 +16,16 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
 	# Enable folder support
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
 
-	# Create a configure-time dependency on cmake.toml to improve IDE support
-	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cmake.toml)
+# Create a configure-time dependency on cmake.toml to improve IDE support
+if(CMKR_ROOT_PROJECT)
+	configure_file(cmake.toml cmake.toml COPYONLY)
 endif()
 
 project(vmdevirt)
 
-# Target: vmdevirt
+# Target vmdevirt
 set(CMKR_TARGET vmdevirt)
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
@@ -126,13 +125,9 @@ else()
     message(STATUS "LLVM setup complete.")
 endif()
 
-set(vmdevirt_SOURCES
-	cmake.toml
-	"include/devirt_t.hpp"
-	"include/devirt_utils.hpp"
-	"include/vm_lifters.hpp"
-	"include/vmp_rtn_t.hpp"
-	"include/xtils.hpp"
+set(vmdevirt_SOURCES "")
+
+list(APPEND vmdevirt_SOURCES
 	"src/devirt_t.cpp"
 	"src/devirt_utils.cpp"
 	"src/lifters/add.cpp"
@@ -163,11 +158,29 @@ set(vmdevirt_SOURCES
 	"src/lifters/writecr3.cpp"
 	"src/main.cpp"
 	"src/vmp_rtn_t.cpp"
+	"include/devirt_t.hpp"
+	"include/devirt_utils.hpp"
+	"include/vm_lifters.hpp"
+	"include/vmp_rtn_t.hpp"
+	"include/xtils.hpp"
 )
 
+list(APPEND vmdevirt_SOURCES
+	cmake.toml
+)
+
+set(CMKR_SOURCES ${vmdevirt_SOURCES})
 add_executable(vmdevirt)
 
-target_sources(vmdevirt PRIVATE ${vmdevirt_SOURCES})
+if(vmdevirt_SOURCES)
+	target_sources(vmdevirt PRIVATE ${vmdevirt_SOURCES})
+endif()
+
+get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
+if(NOT CMKR_VS_STARTUP_PROJECT)
+	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT vmdevirt)
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${vmdevirt_SOURCES})
 
 target_compile_definitions(vmdevirt PRIVATE
@@ -183,7 +196,7 @@ target_include_directories(vmdevirt PRIVATE
 )
 
 target_link_libraries(vmdevirt PRIVATE
-	cli-parser
+	argparse
 	vmprofiler
 	LLVMCore
 	LLVMCodeGen
@@ -196,12 +209,96 @@ target_link_libraries(vmdevirt PRIVATE
 	LLVMX86Info
 	LLVMAsmParser
 	LLVMPasses
+	LLVMRemarks
+	LLVMDebugInfoDWARF
+	LLVMDebugInfoCodeView
+	LLVMTarget
+	LLVMTargetParser
+	LLVMScalarOpts
+	LLVMAnalysis
+	LLVMTransformUtils
+	LLVMAggressiveInstCombine
+	LLVMAsmPrinter
+	LLVMBinaryFormat
+	LLVMBitReader
+	LLVMBitstreamReader
+	LLVMBitWriter
+	LLVMCFGuard
+	LLVMCGData
+	LLVMCodeGenTypes
+	LLVMCoroutines
+	LLVMCoverage
+	LLVMDebugInfoBTF
+	LLVMDebuginfod
+	LLVMDebugInfoGSYM
+	LLVMDebugInfoLogicalView
+	LLVMDebugInfoMSF
+	LLVMDebugInfoPDB
+	LLVMDemangle
+	LLVMDlltoolDriver
+	LLVMDWARFLinker
+	LLVMDWARFLinkerClassic
+	LLVMDWARFLinkerParallel
+	LLVMDWP
+	LLVMExecutionEngine
+	LLVMExtensions
+	LLVMFileCheck
+	LLVMFrontendAtomic
+	LLVMFrontendDriver
+	LLVMFrontendHLSL
+	LLVMFrontendOffloading
+	LLVMFrontendOpenACC
+	LLVMFrontendOpenMP
+	LLVMFuzzerCLI
+	LLVMFuzzMutate
+	LLVMGlobalISel
+	LLVMHipStdPar
+	LLVMInstCombine
+	LLVMInstrumentation
+	LLVMInterfaceStub
+	LLVMInterpreter
+	LLVMipo
+	LLVMIRPrinter
+	LLVMIRReader
+	LLVMJITLink
+	LLVMLibDriver
+	LLVMLineEditor
+	LLVMLTO
+	LLVMMC
+	LLVMMCA
+	LLVMMCDisassembler
+	LLVMMCJIT
+	LLVMMCParser
+	LLVMMIRParser
+	LLVMObjCARCOpts
+	LLVMObjCopy
+	LLVMObject
+	LLVMObjectYAML
+	LLVMOption
+	LLVMOrcDebugging
+	LLVMOrcJIT
+	LLVMOrcShared
+	LLVMOrcTargetProcess
+	LLVMProfileData
+	LLVMRemarks
+	LLVMRuntimeDyld
+	LLVMSandboxIR
+	LLVMSelectionDAG
+	LLVMSymbolize
+	LLVMTableGen
+	LLVMTableGenBasic
+	LLVMTableGenCommon
+	LLVMTextAPI
+	LLVMTextAPIBinaryReader
+	LLVMVectorize
+	LLVMWindowsDriver
+	LLVMWindowsManifest
+	LLVMXRay
 )
 
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
-if(NOT CMKR_VS_STARTUP_PROJECT)
-	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT vmdevirt)
-endif()
+target_link_directories(vmdevirt PRIVATE ${LLVM_INSTALL_DIR}/lib)
+target_include_directories(vmdevirt PRIVATE ${LLVM_INSTALL_DIR}/include)
 
-target_link_directories(pdbgen3 PRIVATE ${LLVM_INSTALL_DIR}/lib)
-target_include_directories(pdbgen3 PRIVATE ${LLVM_INSTALL_DIR}/include)
+unset(CMKR_TARGET)
+unset(CMKR_SOURCES)
+

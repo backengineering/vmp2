@@ -2,23 +2,24 @@
 
 namespace vm
 {
-    lifters_t::lifter_callback_t lifters_t::vmexit = [ & ]( vm::devirt_t *rtn,
-                                                            const vm::instrs::code_block_t &vm_code_block,
-                                                            const vm::instrs::virt_instr_t &vinstr,
-                                                            llvm::IRBuilder<> *ir_builder ) {
+    lifters_t::lifter_callback_t lifters_t::vmexit =
+        [ & ]( vm::devirt_t *rtn, const vm::instrs::code_block_t &vm_code_block, const vm::instrs::virt_instr_t &vinstr,
+               llvm::IRBuilder<> *ir_builder )
+    {
         std::stringstream rtn_name;
         llvm::Function *exit_func = nullptr;
         rtn_name << "vmexit_" << std::hex << vinstr.trace_data.vm_handler_rva + rtn->vmp2_file->image_base;
 
         if ( !( exit_func = rtn->llvm_module->getFunction( rtn_name.str() ) ) )
         {
-            auto vmexit_func_type = llvm::FunctionType::get(
-                ir_builder->getVoidTy(), llvm::PointerType::getInt8PtrTy( ir_builder->getContext() ) );
+            auto &ctx = ir_builder->getContext();
+            auto i8_ptr_ty = llvm::PointerType::get( llvm::Type::getInt8Ty( ctx ), 0 );
+            auto vmexit_func_type = llvm::FunctionType::get( ir_builder->getVoidTy(), { i8_ptr_ty }, false );
 
-            exit_func = llvm::Function::Create( vmexit_func_type, llvm::GlobalValue::LinkageTypes::ExternalLinkage,
+            exit_func = llvm::Function::Create( vmexit_func_type, llvm::GlobalValue::ExternalLinkage,
                                                 rtn_name.str().c_str(), *rtn->llvm_module );
 
-            auto entry_block = llvm::BasicBlock::Create( ir_builder->getContext(), "", exit_func );
+            auto entry_block = llvm::BasicBlock::Create( ctx, "", exit_func );
             auto vmexit_handler_addr = reinterpret_cast< std::uintptr_t >( rtn->vmp2_file ) +
                                        rtn->vmp2_file->module_offset + vinstr.trace_data.vm_handler_rva;
 
@@ -54,7 +55,10 @@ namespace vm
         }
 
         auto &vmp_rtn = rtn->vmp_rtns.back();
-        auto stack_ptr = ir_builder->CreateLoad( vmp_rtn->stack );
+        auto &ctx = ir_builder->getContext();
+        auto i8_ptr_ty = llvm::PointerType::get( llvm::Type::getInt8Ty( ctx ), 0 );
+        auto stack_ptr = ir_builder->CreateLoad( i8_ptr_ty, vmp_rtn->stack );
+
         ir_builder->CreateCall( exit_func, stack_ptr );
         ir_builder->CreateRet( stack_ptr );
     };

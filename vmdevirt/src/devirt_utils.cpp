@@ -72,7 +72,8 @@ namespace devirt
         auto map_img = reinterpret_cast< win::image_t<> * >( map_buff.data() );
         std::for_each( bin_img->get_nt_headers()->get_sections(),
                        bin_img->get_nt_headers()->get_sections() + bin_img->get_file_header()->num_sections,
-                       [ & ]( coff::section_header_t &section ) {
+                       [ & ]( coff::section_header_t &section )
+                       {
                            if ( !section.virtual_address || !section.ptr_raw_data )
                                return;
 
@@ -82,7 +83,8 @@ namespace devirt
 
         std::for_each( map_img->get_nt_headers()->get_sections(),
                        map_img->get_nt_headers()->get_sections() + bin_img->get_file_header()->num_sections,
-                       [ & ]( coff::section_header_t &section ) {
+                       [ & ]( coff::section_header_t &section )
+                       {
                            section.ptr_raw_data = section.virtual_address;
                            section.size_raw_data = section.virtual_size;
                        } );
@@ -116,82 +118,92 @@ namespace devirt
 
         static const auto get_symbol = [ & ]( std::string symbol_name ) -> auto
         {
-            return std::find_if( symbols, symbols + symbol_cnt, [ & ]( coff::symbol_t &symbol ) {
-                if ( symbol.derived_type != coff::derived_type_id::function )
-                    return false;
+            return std::find_if( symbols, symbols + symbol_cnt,
+                                 [ & ]( coff::symbol_t &symbol )
+                                 {
+                                     if ( symbol.derived_type != coff::derived_type_id::function )
+                                         return false;
 
-                return !strcmp( symbol.name.to_string( str_table ).data(), symbol_name.c_str() );
-            } );
+                                     return !strcmp( symbol.name.to_string( str_table ).data(), symbol_name.c_str() );
+                                 } );
         };
 
         std::vector< std::pair< std::uint32_t, std::uint16_t > > new_relocs;
-        std::for_each( symbols, symbols + symbol_cnt, [ & ]( coff::symbol_t &symbol ) {
-            if ( symbol.derived_type != coff::derived_type_id::function )
-                return;
-
-            auto symbol_name = symbol.name.to_string( str_table );
-            if ( strstr( symbol_name.data(), VM_ENTER_NAME ) )
+        std::for_each(
+            symbols, symbols + symbol_cnt,
+            [ & ]( coff::symbol_t &symbol )
             {
-                // fix 0x1000000000000000 to 0x0000000000000000
-                // also push back a new relocation for this entry...
-                auto symbol_addr = reinterpret_cast< std::uintptr_t >( obj_img_addr ) + symbol.value +
-                                   obj_sections[ symbol.section_index - 1 ].ptr_raw_data;
+                if ( symbol.derived_type != coff::derived_type_id::function )
+                    return;
 
-                *reinterpret_cast< std::uintptr_t * >( symbol_addr + FIX_MAKE_ZERO_OFFSET ) = 0ull;
-                *reinterpret_cast< std::uintptr_t * >( symbol_addr + FIX_MAKE_RELOC_OFFSET ) = 0ull;
-
-                auto page = ( symbol.value + obj_sections[ symbol.section_index - 1 ].ptr_raw_data +
-                              FIX_MAKE_RELOC_OFFSET + pe_sections[ num_sections ].virtual_address ) &
-                            ~0xFFFull;
-
-                auto offset = ( symbol.value + obj_sections[ symbol.section_index - 1 ].ptr_raw_data +
-                                FIX_MAKE_RELOC_OFFSET + pe_sections[ num_sections ].virtual_address ) &
-                              0xFFFull;
-
-                new_relocs.push_back( { page, offset } );
-
-                // look up the rtn_xxxxxx function symbol for this vm enter and make it jmp to it...
-                auto rtn_offset = std::stoull( symbol_name.data() + sizeof( VM_ENTER_NAME ) - 1, nullptr, 16 );
-
-                std::stringstream rtn_name;
-                rtn_name << "rtn_" << std::hex << rtn_offset;
-                auto rtn_sym = get_symbol( rtn_name.str() );
-                auto relocs = reinterpret_cast< coff::reloc_t * >(
-                    obj_sections[ rtn_sym->section_index - 1 ].ptr_relocs + obj_img_addr );
-
-                auto rtn_rva = rtn_offset - map_img->get_nt_headers()->optional_header.image_base;
-                std::int32_t devirt_rtn_rva = symbol_addr - reinterpret_cast< std::uintptr_t >( map_buff.data() );
-
-                *reinterpret_cast< std::int32_t * >( rtn_rva + map_buff.data() + 1 ) = devirt_rtn_rva - ( rtn_rva + 5 );
-                *reinterpret_cast< std::uint8_t * >( rtn_rva + map_buff.data() ) = 0xE9;
-
-                // apply relocations to the rtn_xxxxx...
-                for ( auto reloc_idx = 0u; reloc_idx < obj_sections[ rtn_sym->section_index - 1 ].num_relocs;
-                      ++reloc_idx )
+                auto symbol_name = symbol.name.to_string( str_table );
+                printf( "Symbol Name: %s\n", symbol_name.data() );
+                if ( strstr( symbol_name.data(), VM_ENTER_NAME ) )
                 {
-                    coff::reloc_t &reloc = relocs[ reloc_idx ];
+                    // fix 0x1000000000000000 to 0x0000000000000000
+                    // also push back a new relocation for this entry...
+                    auto symbol_addr = reinterpret_cast< std::uintptr_t >( obj_img_addr ) + symbol.value +
+                                       obj_sections[ symbol.section_index - 1 ].ptr_raw_data;
 
-                    auto vmexit_sym =
-                        get_symbol( std::string( symbols[ reloc.symbol_index ].name.to_string( str_table ) ) );
+                    *reinterpret_cast< std::uintptr_t * >( symbol_addr + FIX_MAKE_ZERO_OFFSET ) = 0ull;
+                    *reinterpret_cast< std::uintptr_t * >( symbol_addr + FIX_MAKE_RELOC_OFFSET ) = 0ull;
 
-                    auto vmexit_offset = vmexit_sym->value + obj_sections[ vmexit_sym->section_index - 1 ].ptr_raw_data;
+                    auto page = ( symbol.value + obj_sections[ symbol.section_index - 1 ].ptr_raw_data +
+                                  FIX_MAKE_RELOC_OFFSET + pe_sections[ num_sections ].virtual_address ) &
+                                ~0xFFFull;
 
-                    auto reloc_file_offset =
-                        reloc.virtual_address + obj_sections[ rtn_sym->section_index - 1 ].ptr_raw_data;
+                    auto offset = ( symbol.value + obj_sections[ symbol.section_index - 1 ].ptr_raw_data +
+                                    FIX_MAKE_RELOC_OFFSET + pe_sections[ num_sections ].virtual_address ) &
+                                  0xFFFull;
 
-                    std::int32_t rva = vmexit_offset - ( std::int32_t )( reloc_file_offset + 4 );
-                    *reinterpret_cast< std::int32_t * >( obj_img_addr + reloc_file_offset ) = rva;
+                    new_relocs.push_back( { page, offset } );
+
+                    // look up the rtn_xxxxxx function symbol for this vm enter and make it jmp to it...
+                    auto rtn_offset = std::stoull( symbol_name.data() + sizeof( VM_ENTER_NAME ) - 1, nullptr, 16 );
+
+                    std::stringstream rtn_name;
+                    rtn_name << "rtn_" << std::hex << rtn_offset;
+                    auto rtn_sym = get_symbol( rtn_name.str() );
+                    auto relocs = reinterpret_cast< coff::reloc_t * >(
+                        obj_sections[ rtn_sym->section_index - 1 ].ptr_relocs + obj_img_addr );
+
+                    auto rtn_rva = rtn_offset - map_img->get_nt_headers()->optional_header.image_base;
+                    std::int32_t devirt_rtn_rva = symbol_addr - reinterpret_cast< std::uintptr_t >( map_buff.data() );
+
+                    *reinterpret_cast< std::int32_t * >( rtn_rva + map_buff.data() + 1 ) =
+                        devirt_rtn_rva - ( rtn_rva + 5 );
+                    *reinterpret_cast< std::uint8_t * >( rtn_rva + map_buff.data() ) = 0xE9;
+
+                    printf( "Patching rva %x with jmp\n", rtn_rva );
+
+                    // apply relocations to the rtn_xxxxx...
+                    for ( auto reloc_idx = 0u; reloc_idx < obj_sections[ rtn_sym->section_index - 1 ].num_relocs;
+                          ++reloc_idx )
+                    {
+                        coff::reloc_t &reloc = relocs[ reloc_idx ];
+
+                        auto vmexit_sym =
+                            get_symbol( std::string( symbols[ reloc.symbol_index ].name.to_string( str_table ) ) );
+
+                        auto vmexit_offset =
+                            vmexit_sym->value + obj_sections[ vmexit_sym->section_index - 1 ].ptr_raw_data;
+
+                        auto reloc_file_offset =
+                            reloc.virtual_address + obj_sections[ rtn_sym->section_index - 1 ].ptr_raw_data;
+
+                        std::int32_t rva = vmexit_offset - ( std::int32_t )( reloc_file_offset + 4 );
+                        *reinterpret_cast< std::int32_t * >( obj_img_addr + reloc_file_offset ) = rva;
+                    }
+
+                    auto rtn_addr = reinterpret_cast< std::uintptr_t >(
+                        obj_img_addr + obj_sections[ rtn_sym->section_index - 1 ].ptr_raw_data + rtn_sym->value );
+
+                    // create jmp to the rtn_xxxxx....
+                    std::int32_t rva = rtn_addr - ( std::int64_t )( symbol_addr + FIX_MAKE_JMP_OFFSET + 5 );
+                    *reinterpret_cast< std::uint8_t * >( symbol_addr + FIX_MAKE_JMP_OFFSET ) = 0xE9;
+                    *reinterpret_cast< std::int32_t * >( symbol_addr + FIX_MAKE_JMP_OFFSET + 1 ) = rva;
                 }
-
-                auto rtn_addr = reinterpret_cast< std::uintptr_t >(
-                    obj_img_addr + obj_sections[ rtn_sym->section_index - 1 ].ptr_raw_data + rtn_sym->value );
-
-                // create jmp to the rtn_xxxxx....
-                std::int32_t rva = rtn_addr - ( std::int64_t )( symbol_addr + FIX_MAKE_JMP_OFFSET + 5 );
-                *reinterpret_cast< std::uint8_t * >( symbol_addr + FIX_MAKE_JMP_OFFSET ) = 0xE9;
-                *reinterpret_cast< std::int32_t * >( symbol_addr + FIX_MAKE_JMP_OFFSET + 1 ) = rva;
-            }
-        } );
+            } );
 
         // replace bin vector with map_buff vector...
         bin.clear();

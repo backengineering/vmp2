@@ -1,12 +1,14 @@
 #include <Windows.h>
-#include <cli-parser.hpp>
+#include <argparse.h>
 #include <devirt_t.hpp>
 #include <devirt_utils.hpp>
 #include <xtils.hpp>
 
+using namespace argparse;
+
 int main( int argc, const char *argv[] )
 {
-    argparse::argument_parser_t parser( "vmdevirt", "virtual instruction pseudo code generator" );
+    ArgumentParser parser( "vmdevirt", "virtual instruction pseudo code generator" );
     parser.add_argument().name( "--vmp2file" ).required( true ).description( "path to .vmp2 file..." );
     parser.add_argument().name( "--out" ).required( true ).description( "output devirtualized binary name..." );
     parser.add_argument().name( "--genobj" ).description( "write the generated obj file to disk..." );

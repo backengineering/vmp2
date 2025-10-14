@@ -8,8 +8,8 @@
 #define PAGE_4KB 0x1000
 #define STACK_SIZE PAGE_4KB * 512
 
-#define STACK_BASE 0xFFFF000000000000
-#define IAT_VECTOR_TABLE 0xFFFFF00000000000
+#define STACK_BASE 0x9000000000000
+#define IAT_VECTOR_TABLE 0xA00000000000
 
 namespace vm {
 inline bool g_force_emu = false;

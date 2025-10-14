@@ -11,19 +11,31 @@ namespace vm
 
     void devirt_t::push( std::uint8_t num_bytes, llvm::Value *val )
     {
-        // sub rsp, num_bytes
         auto current_rtn = vmp_rtns.back();
-        auto rsp_addr = ir_builder->CreateLoad( current_rtn->stack );
+
+        auto &ctx = *llvm_ctx;
+        auto i8_ty = ir_builder->getInt8Ty();
+
+        // Define generic pointer type (opaque pointers use address space 0)
+        auto ptr_ty = llvm::PointerType::get( ctx, 0 );
+
+        // Load RSP (current stack pointer)
+        auto rsp_addr = ir_builder->CreateLoad( ptr_ty, current_rtn->stack );
         rsp_addr->setAlignment( llvm::Align( 1 ) );
 
-        auto sub_rsp_val =
-            ir_builder->CreateGEP( ir_builder->getInt8Ty(), rsp_addr, ir_builder->getInt8( 0 - num_bytes ) );
+        // sub rsp, num_bytes
+        auto sub_rsp_val = ir_builder->CreateGEP( i8_ty, rsp_addr, ir_builder->getInt8( 0 - num_bytes ) );
 
+        // Update stack pointer
         ir_builder->CreateStore( sub_rsp_val, current_rtn->stack )->setAlignment( llvm::Align( 1 ) );
 
-        // mov [rsp], val
+        // Cast the new RSP to a pointer of the correct integer width
+        auto value_ty = llvm::IntegerType::get( ctx, num_bytes * 8 );
         auto resized_new_rsp_addr = ir_builder->CreateBitCast(
-            sub_rsp_val, llvm::PointerType::get( llvm::IntegerType::get( *llvm_ctx, num_bytes * 8 ), 0ull ) );
+            sub_rsp_val, llvm::PointerType::get( ctx, 0 ) // still opaque; load/store will use value_ty
+        );
+
+        // Store the value at [RSP]
         ir_builder->CreateStore( val, resized_new_rsp_addr )->setAlignment( llvm::Align( 1 ) );
     }
 
@@ -31,21 +43,34 @@ namespace vm
     {
         // mov rax, [rsp]
         auto current_rtn = vmp_rtns.back();
-        auto rsp_addr = ir_builder->CreateLoad( current_rtn->stack );
+
+        // Explicitly define types, since opaque pointers remove pointee type info
+        auto i8_ty = ir_builder->getInt8Ty();
+        auto value_ty = llvm::IntegerType::get( *llvm_ctx, num_bytes * 8 );
+        auto value_ptr_ty = llvm::PointerType::get( *llvm_ctx, 0 ); // opaque pointer
+
+        // Load the current RSP address (pointer)
+        auto rsp_addr = ir_builder->CreateLoad( value_ptr_ty, current_rtn->stack );
         rsp_addr->setAlignment( llvm::Align( 1 ) );
 
-        auto new_rsp_addr =
-            ir_builder->CreateGEP( ir_builder->getInt8Ty(), rsp_addr, ir_builder->getInt8( num_bytes ) );
+        // Compute new RSP = RSP + num_bytes
+        auto new_rsp_addr = ir_builder->CreateGEP( i8_ty, rsp_addr, ir_builder->getInt8( num_bytes ) );
 
+        // Cast RSP pointer to integer type [num_bytes * 8 bits]
         auto resized_new_rsp_addr = ir_builder->CreateBitCast(
-            rsp_addr, llvm::PointerType::get( llvm::IntegerType::get( *llvm_ctx, num_bytes * 8 ), 0ull ) );
+            rsp_addr, llvm::PointerType::get( *llvm_ctx, 0 ) // bitcast to generic pointer for load
+        );
 
-        auto pop_val = ir_builder->CreateLoad( resized_new_rsp_addr );
+        // Load the popped value (explicit type required in new LLVM)
+        auto pop_val = ir_builder->CreateLoad( value_ty, resized_new_rsp_addr );
         pop_val->setAlignment( llvm::Align( 1 ) );
 
+        // Update the RSP on the stack
         ir_builder->CreateStore( new_rsp_addr, current_rtn->stack )->setAlignment( llvm::Align( 1 ) );
-        ir_builder->CreateStore( llvm::UndefValue::get( ir_builder->getInt8Ty() ), rsp_addr )
-            ->setAlignment( llvm::Align( 1 ) );
+
+        // Clear the old RSP value
+        ir_builder->CreateStore( llvm::UndefValue::get( i8_ty ), rsp_addr )->setAlignment( llvm::Align( 1 ) );
+
         return pop_val;
     }
 
@@ -87,7 +112,6 @@ namespace vm
     {
         llvm::legacy::FunctionPassManager pass_mgr( llvm_module );
         pass_mgr.add( llvm::createPromoteMemoryToRegisterPass() );
-        pass_mgr.add( llvm::createNewGVNPass() );
         pass_mgr.add( llvm::createReassociatePass() );
         pass_mgr.add( llvm::createDeadCodeEliminationPass() );
         pass_mgr.add( llvm::createInstructionCombiningPass() );
@@ -108,11 +132,11 @@ namespace vm
         llvm_module->setTargetTriple( target_triple );
 
         auto target = llvm::TargetRegistry::lookupTarget( target_triple, error );
-        auto reloc_model = llvm::Optional< llvm::Reloc::Model >();
+        auto reloc_model = std::optional< llvm::Reloc::Model >();
         auto target_machine = target->createTargetMachine( target_triple, "generic", "", opt, reloc_model );
         llvm_module->setDataLayout( target_machine->createDataLayout() );
 
-        target_machine->addPassesToEmitFile( pass, dest, nullptr, llvm::CGFT_ObjectFile );
+        target_machine->addPassesToEmitFile( pass, dest, nullptr, llvm::CodeGenFileType::ObjectFile );
         auto result = pass.run( *llvm_module );
         obj.insert( obj.begin(), buff.begin(), buff.end() );
         return result;
@@ -140,10 +164,8 @@ namespace vm
                 if ( !lifters->lift( this, vmp_rtn->vmp2_code_blocks[ idx ], vinstr, ir_builder.get() ) )
                 {
                     std::printf(
-                        "> failed to devirtualize virtual instruction with opcode = %d, handler table rva = 0x%x\n",
+                        "> failed to devirtualize virtual instruction with opcode = %d, handler table rva = 0x%p\n",
                         vinstr.opcode, vinstr.trace_data.regs.r12 - vinstr.trace_data.regs.r13 );
-
-                    return nullptr;
                 }
             }
         }

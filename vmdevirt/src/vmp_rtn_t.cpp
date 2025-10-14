@@ -1,3 +1,4 @@
+#include <sstream>
 #include <vmp_rtn_t.hpp>
 
 namespace vm
@@ -26,27 +27,32 @@ namespace vm
                                           ( std::string( "vreg" ) + std::to_string( idx ) ).c_str() ) );
     }
 
-    void vmp_rtn_t::create_routine( void )
+void vmp_rtn_t::create_routine()
     {
-        auto func_ty =
-            llvm::FunctionType::get( llvm::PointerType::getInt8PtrTy( ir_builder->getContext() ),
-                                     { llvm::PointerType::getInt8PtrTy( ir_builder->getContext() ) }, false );
+        auto &ctx = ir_builder->getContext();
+
+        // Define i8* type (since getInt8PtrTy is now on Type, not PointerType)
+        auto i8_ptr_ty = llvm::PointerType::get( llvm::Type::getInt8Ty( ctx ), 0 );
+
+        // Function type: i8* (i8*)
+        auto func_ty = llvm::FunctionType::get( i8_ptr_ty, { i8_ptr_ty }, false );
 
         std::stringstream rtn_name;
         rtn_name << "rtn_" << std::hex << rtn_begin;
-        llvm_fptr = llvm::Function::Create( func_ty, llvm::GlobalValue::LinkageTypes::ExternalLinkage,
-                                            rtn_name.str().c_str(), *llvm_module );
 
+        llvm_fptr = llvm::Function::Create( func_ty, llvm::GlobalValue::ExternalLinkage, rtn_name.str(), *llvm_module );
+
+        // Create basic blocks for each VMProtect code block
         for ( const auto &vmp2_code_block : vmp2_code_blocks )
         {
-            // create basic block name... block_xxxxxxxx format...
             std::stringstream blk_name;
             blk_name << "blk_" << std::hex << vmp2_code_block.vip_begin;
+
             llvm_code_blocks.push_back(
-                { vmp2_code_block.vip_begin,
-                  llvm::BasicBlock::Create( ir_builder->getContext(), blk_name.str().c_str(), llvm_fptr ) } );
+                { vmp2_code_block.vip_begin, llvm::BasicBlock::Create( ctx, blk_name.str(), llvm_fptr ) } );
         }
 
+        // Load and deobfuscate the VM entry routine
         zydis_routine_t vm_enter;
         auto vm_enter_addr = reinterpret_cast< std::uintptr_t >( vmp2_file ) + vmp2_file->module_offset +
                              ( rtn_begin - vmp2_file->image_base );
@@ -78,15 +84,16 @@ namespace vm
             }
         }
 
+        // Build the entry stub function
         rtn_name.str( "" );
+        rtn_name << "vmenter_" << std::hex << rtn_begin;
+
         asm_str.append( "mov rcx, rsp; sub rsp, 0xA00; int 3; int 3; int 3; int 3; int 3;" );
 
-        rtn_name << "vmenter_" << std::hex << rtn_begin;
         auto entry_func = llvm::Function::Create( llvm::FunctionType::get( ir_builder->getVoidTy(), false ),
-                                                  llvm::GlobalValue::LinkageTypes::ExternalLinkage,
-                                                  rtn_name.str().c_str(), *llvm_module );
+                                                  llvm::GlobalValue::ExternalLinkage, rtn_name.str(), *llvm_module );
 
-        auto entry_block = llvm::BasicBlock::Create( ir_builder->getContext(), "", entry_func );
+        auto entry_block = llvm::BasicBlock::Create( ctx, "", entry_func );
         ir_builder->SetInsertPoint( entry_block );
 
         auto entry_stub = llvm::InlineAsm::get( llvm::FunctionType::get( ir_builder->getVoidTy(), false ), asm_str, "",

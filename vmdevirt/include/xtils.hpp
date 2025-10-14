@@ -126,44 +126,44 @@ namespace xtils
             return nullptr;
         }
 
-        auto get_modules( std::uint32_t pid, module_map_t &module_map ) -> bool
-        {
-            uq_handle snapshot = { CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, pid ), &CloseHandle };
+        //auto get_modules( std::uint32_t pid, module_map_t &module_map ) -> bool
+        //{
+        //    uq_handle snapshot = { CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, pid ), &CloseHandle };
 
-            if ( snapshot.get() == INVALID_HANDLE_VALUE )
-                return false;
+        //    if ( snapshot.get() == INVALID_HANDLE_VALUE )
+        //        return false;
 
-            MODULEENTRY32 module_info = { sizeof MODULEENTRY32 };
-            Module32First( snapshot.get(), &module_info );
+        //    MODULEENTRY32 module_info = { sizeof MODULEENTRY32 };
+        //    Module32First( snapshot.get(), &module_info );
 
-            // lowercase the module name...
-            std::for_each( module_info.szModule, module_info.szModule + wcslen( module_info.szModule ) * 2,
-                           []( wchar_t &c ) { c = ::towlower( c ); } );
+        //    // lowercase the module name...
+        //    std::for_each( module_info.szModule, module_info.szModule + wcslen( module_info.szModule ) * 2,
+        //                   []( wchar_t &c ) { c = ::towlower( c ); } );
 
-            module_map[ module_info.szModule ] = reinterpret_cast< std::uintptr_t >( module_info.modBaseAddr );
+        //    module_map[ module_info.szModule ] = reinterpret_cast< std::uintptr_t >( module_info.modBaseAddr );
 
-            for ( Module32First( snapshot.get(), &module_info ); Module32Next( snapshot.get(), &module_info ); )
-            {
-                // lowercase the module name...
-                std::for_each( module_info.szModule, module_info.szModule + wcslen( module_info.szModule ) * 2,
-                               []( wchar_t &c ) { c = ::towlower( c ); } );
+        //    for ( Module32First( snapshot.get(), &module_info ); Module32Next( snapshot.get(), &module_info ); )
+        //    {
+        //        // lowercase the module name...
+        //        std::for_each( module_info.szModule, module_info.szModule + wcslen( module_info.szModule ) * 2,
+        //                       []( wchar_t &c ) { c = ::towlower( c ); } );
 
-                module_map[ module_info.szModule ] = reinterpret_cast< std::uintptr_t >( module_info.modBaseAddr );
-            }
+        //        module_map[ module_info.szModule ] = reinterpret_cast< std::uintptr_t >( module_info.modBaseAddr );
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        void each_module( std::uint32_t pid, module_callback_t callback )
-        {
-            module_map_t module_map;
-            if ( !get_modules( pid, module_map ) )
-                return;
+        //void each_module( std::uint32_t pid, module_callback_t callback )
+        //{
+        //    module_map_t module_map;
+        //    if ( !get_modules( pid, module_map ) )
+        //        return;
 
-            for ( auto &[ module_name, module_base ] : module_map )
-                if ( !callback( module_name, module_base ) )
-                    break;
-        }
+        //    for ( auto &[ module_name, module_base ] : module_map )
+        //        if ( !callback( module_name, module_base ) )
+        //            break;
+        //}
 
         // https://github.com/PierreCiholas/GetBaseAddress/blob/master/main.cpp#L7
         auto get_process_base( HANDLE proc_handle ) -> std::uintptr_t

@@ -10,6 +10,10 @@ VMAssembler is a small C++ project which uses [flex](https://en.wikipedia.org/wi
 
 # [Doxygen Documentation](https://docs.back.engineering/vmassembler/)
 
+## Compiled Example
+
+You can find a compiled example of the "hello world" encoded program [here](demo/demo.bin).
+
 ### Contents 
 
 The repo contains the following notable folders and files:
