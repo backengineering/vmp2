@@ -39,6 +39,9 @@ It is responsible for identifying key VMProtect 2 components such as **VM handle
 
 ---
 
+## VMProtect 2 Unpacker
+
+Please follow the [instructions on this page.](UNPACKER.md)
 
 ## Build Instructions
 
@@ -76,3 +79,7 @@ cmake --build build
 cmake -B build -DBUILD_VMDEVIRT=ON -DBUILD_VMPROFILER_QT=ON -DLLVM_BUILD_TYPE=Release
 cmake --build build
 ```
+
+# Legal Disclaimer
+
+These tools are provided for educational and research purposes only. They are not to be used for any illegal activities, unauthorized access, or violations of the DMCA or other laws. The tools themselves do not violate any DMCA regulations. All work is my original creation, and any actions taken by users of these tools are solely the responsibility of those users and do not reflect the actions or intentions of the author.
