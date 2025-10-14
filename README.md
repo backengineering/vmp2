@@ -1,10 +1,9 @@
 # Introduction
 
 This repository is a collection of legacy tools for working with **VMProtect 2**-protected binaries.  
-These tools enable unpacking, analysis, and experimental **devirtualization** of software protected with VMProtect 2.  
+These tools enable unpacking, analysis, and experimental **devirtualization** of software protected with VMProtect 2. At the core of this collection is **`vmprofiler`**, a utility library that provides the foundational logic used by all other tools. It is responsible for identifying key VMProtect 2 components such as **VM handlers**, the **handler table**, **transforms**, and more.
 
-At the core of this collection is **`vmprofiler`**, a utility library that provides the foundational logic used by all other tools.  
-It is responsible for identifying key VMProtect 2 components such as **VM handlers**, the **handler table**, **transforms**, and more.
+Attempting to identify individual VM handlers is brittle, does not scale, and can be defeated by changes to the virtual machine. Instead, this project advocates an incremental lifting and control‑flow recovery strategy with minimal VM‑specific deobfuscation logic. Tools such as [Saturn](https://arxiv.org/pdf/1909.01752), [Triton](https://github.com/JonathanSalwan/VMProtect-devirtualization), and [Mergen](https://github.com/NaC-L/Mergen) have successfully deobfuscated VMProtect with little or no VM‑specific handler identification. This repository documents the architecture of VMProtect 2 and serves as a cautionary note: avoid building devirtualization tooling that heavily depend on identifying virtual‑machine‑specific handlers.
 
 ---
 
@@ -82,4 +81,4 @@ cmake --build build
 
 # Legal Disclaimer
 
-These tools are provided for educational and research purposes only. They are not to be used for any illegal activities, unauthorized access, or violations of the DMCA or other laws. The tools themselves do not violate any DMCA regulations. All work is my original creation, and any actions taken by users of these tools are solely the responsibility of those users and do not reflect the actions or intentions of the author.
+> These tools are provided for educational and research purposes only. They are not to be used for any illegal activities, unauthorized access, or violations of the DMCA or other laws. The tools themselves do not violate any DMCA regulations. All work is my original creation, and any actions taken by users of these tools are solely the responsibility of those users and do not reflect the actions or intentions of the author.
