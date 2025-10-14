@@ -1,10 +1,4 @@
-<div align="center">
-    <div>
-        <img src="https://githacks.org/uploads/-/system/project/avatar/371/VMProtect.png"/>
-    </div>
-</div>
-
-# VMProfiler CLI - VMProtect 2 Virtual Machine Information Displayer
+# VMProtect 2 Virtual Machine Information Displayer
 
 vmprofiler-cli is a CLI program which displays all details of a specified VMProtect 2 virtual machine. This information includes virtual instruction pointer advancment direction, all vm handlers, virtual instruction rva decrypt instructions, vm handler table entry decrypt instruction, and much more.
 
