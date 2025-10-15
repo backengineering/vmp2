@@ -5,7 +5,7 @@ These tools enable unpacking, analysis, and experimental **devirtualization** of
 
 ### Warning
 
-Attempting to identify individual VM handlers is brittle, does not scale, and can be defeated by changes to the virtual machine. Instead, this project advocates an incremental lifting and control‑flow recovery strategy with minimal VM‑specific deobfuscation logic. Tools such as [Saturn](https://arxiv.org/pdf/1909.01752), [Triton](https://github.com/JonathanSalwan/VMProtect-devirtualization), and [Mergen](https://github.com/NaC-L/Mergen) have successfully deobfuscated VMProtect with little or no VM‑specific handler identification. This repository documents the architecture of VMProtect 2 and serves as a cautionary note: avoid building devirtualization tooling that heavily depend on identifying virtual‑machine‑specific handlers.
+Attempting to identify individual VM handlers is brittle, does not scale, and can be defeated by changes to the virtual machine architecture (interlinking multiple handlers, complex handlers, etc). Instead, this project advocates an incremental lifting and control‑flow recovery strategy with minimal VM‑specific deobfuscation logic. Tools such as [Saturn](https://arxiv.org/pdf/1909.01752), [Triton](https://github.com/JonathanSalwan/VMProtect-devirtualization), and [Mergen](https://github.com/NaC-L/Mergen) have successfully deobfuscated VMProtect with little or no VM‑specific handler identification. This repository documents the architecture of VMProtect 2 and serves as a cautionary note: avoid building devirtualization tooling that heavily depend on identifying virtual‑machine‑specific handlers.
 
 ---
 
