@@ -5,17 +5,19 @@ These tools enable unpacking, analysis, and experimental **devirtualization** of
 
 ### Warning
 
-Attempting to identify individual VM handlers is brittle, does not scale, and can be defeated by changes to the virtual machine architecture (interlinking multiple handlers, complex handlers, etc). Instead, this project advocates an incremental lifting and control‑flow recovery strategy with minimal VM‑specific deobfuscation logic. Tools such as [Saturn](https://arxiv.org/pdf/1909.01752), [Triton](https://github.com/JonathanSalwan/VMProtect-devirtualization), and [Mergen](https://github.com/NaC-L/Mergen) have successfully deobfuscated VMProtect with little or no VM‑specific handler identification. This repository documents the architecture of VMProtect 2 and serves as a cautionary note: avoid building devirtualization tooling that heavily depend on identifying virtual‑machine‑specific handlers.
+The lessons learned from this 4+ year old project should be passed on to those interested in devirtualization.
+
+This project attempts to identify individual VM handlers. This approach is brittle, does not scale, and can be defeated by changes to the virtual machine architecture (interlinking multiple handlers, complex handlers, etc). Instead, i advocate for an incremental lifting and control‑flow recovery strategy with minimal VM‑specific deobfuscation logic. Tools such as [Saturn](https://arxiv.org/pdf/1909.01752), [Triton](https://github.com/JonathanSalwan/VMProtect-devirtualization), and [Mergen](https://github.com/NaC-L/Mergen) have successfully deobfuscated VMProtect with little or no VM‑specific handler identification. This repository documents the architecture of VMProtect 2 and serves as a cautionary note: avoid building devirtualization tooling that heavily depend on identifying virtual‑machine‑specific handlers.
 
 ---
 
 ### Tools Overview
 
 - **[vmemu](/vmemu)**  
-  A Unicorn Engine–based virtual machine exploration tool.  
+  A Unicorn Engine–based virtual machine exploration tool.
   It allows you to **unpack protected programs** and **analyze control flow** within a specified `vmenter`.  
   This tool generates a `.vmp2` file containing the control flow graph of the given VM entry.  
-  The resulting `.vmp2` file can then be passed to **[vmdevirt](/vmdevirt)** to recompile the function back into native x86 and reintegrate it into the original binary.
+  The resulting `.vmp2` file can then be passed to **[vmdevirt](/vmdevirt)** to recompile the function back into native x86 and reintegrate it into the original binary. **Please note that this is NOT just a simple tracer which will only discover a single path through a function, it actually identifies virtual jccs and will explore all virtualized control flow.**
 
 - **[vmdevirt](/vmdevirt)**  
   An **experimental LLVM-based recompiler** for `.vmp2` files.  
